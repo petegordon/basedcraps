@@ -12,7 +12,7 @@ export function ReadContract(config: any) {
     const { writeContract } = useWriteContract()
     const { data, refetch } = useReadContract({
         abi: contractABI,
-        address: '0x492eCDB67522b428336f1bB6bbdEB68DE8Fa8aa9',
+        address: '0x61E96a002c40e29c68bD679dA7f48Aaea3F317a0',
         functionName: 'getRollsForAddress',
         args: ['0x232006Df7CC1838d6ba3193d09eE591aEf1C7f5E'],
       });    
@@ -28,7 +28,7 @@ export function ReadContract(config: any) {
         <button 
         onClick={() => writeContract({
             abi: contractABI,
-            address: '0x492eCDB67522b428336f1bB6bbdEB68DE8Fa8aa9',
+            address: '0x61E96a002c40e29c68bD679dA7f48Aaea3F317a0',
             functionName: 'rollDice',
             value: parseEther('0.0003')
         })  
