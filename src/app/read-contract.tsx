@@ -30,7 +30,8 @@ export function ReadContract(config: any) {
             abi: contractABI,
             address: '0x61E96a002c40e29c68bD679dA7f48Aaea3F317a0',
             functionName: 'rollDice',
-            value: parseEther('0.0003')
+            value: parseEther('0.0003'),
+            gas: BigInt(100000),
         })  
     }>Roll Dice</button>
      <button onClick={() => refetch()}>Get Rolls</button>
