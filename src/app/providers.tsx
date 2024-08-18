@@ -7,6 +7,7 @@ import { type State, WagmiProvider } from 'wagmi'
 import { getConfig } from '@/wagmi'
 import { Profile } from './profile'
 import { ReadContract } from './read-contract'
+import { GasEstimate } from './gas-estimate'
 
 export function Providers(props: {
   children: ReactNode
@@ -20,6 +21,7 @@ export function Providers(props: {
       <QueryClientProvider client={queryClient}>
         {props.children}
         <ReadContract config={config} />
+        <GasEstimate config={config} />
       </QueryClientProvider>
     </WagmiProvider>
   )
