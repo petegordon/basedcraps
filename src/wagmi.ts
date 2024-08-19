@@ -1,4 +1,4 @@
-import { http, cookieStorage, createConfig, createStorage } from 'wagmi'
+import { http, cookieStorage, createConfig, createStorage, webSocket } from 'wagmi'
 import { mainnet, sepolia, baseSepolia } from 'wagmi/chains'
 import { coinbaseWallet, injected, walletConnect } from 'wagmi/connectors'
 
@@ -18,7 +18,7 @@ export function getConfig() {
     transports: {
       //[mainnet.id]: http(),
       //[sepolia.id]: http(),
-      [baseSepolia.id]: http(),
+      [baseSepolia.id]: webSocket(`https://base-sepolia.g.alchemy.com/v2/${process.env.NEXT_PUBLIC_ALCHEMY_API_KEY}`),
     },    
   })
 }
