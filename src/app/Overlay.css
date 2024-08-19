@@ -12,7 +12,8 @@
   }
   
   .countdown {
+    top:1em;
     color: rgb(168, 168, 168);
-    font-size: 5rem;
+    font-size: 30rem;
     font-weight: bold;
   }
