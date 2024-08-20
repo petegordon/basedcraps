@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useAccount, useEstimateGas, useReadContract, useWriteContract, useWatchContractEvent} from 'wagmi'
 import { parseEther } from 'viem'
 import Overlay from './Overlay'; // Import the Overlay component
+import './read-contract.css'; // You'll create this CSS file to style the overlay
 
 const contractABI = [{"inputs":[{"internalType":"address","name":"_admin","type":"address"}],"stateMutability":"nonpayable","type":"constructor"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"admin","type":"address"},{"indexed":false,"internalType":"uint256","name":"amount","type":"uint256"}],"name":"AdminWithdrawal","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"player","type":"address"},{"indexed":false,"internalType":"uint256","name":"amount","type":"uint256"}],"name":"Deposit","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"player","type":"address"},{"indexed":false,"internalType":"uint8","name":"value1","type":"uint8"},{"indexed":false,"internalType":"uint8","name":"value2","type":"uint8"},{"indexed":false,"internalType":"string","name":"outcome","type":"string"}],"name":"DiceRolled","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"sender","type":"address"},{"indexed":false,"internalType":"uint256","name":"amount","type":"uint256"}],"name":"FundsAdded","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"player","type":"address"},{"indexed":false,"internalType":"uint256","name":"amount","type":"uint256"}],"name":"Withdrawal","type":"event"},{"inputs":[],"name":"admin","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"depositFunds","outputs":[],"stateMutability":"payable","type":"function"},{"inputs":[{"internalType":"address","name":"playerAddress","type":"address"}],"name":"getRollsForAddress","outputs":[{"components":[{"components":[{"internalType":"uint8","name":"value1","type":"uint8"},{"internalType":"uint8","name":"value2","type":"uint8"}],"internalType":"struct DiceRoller.Roll[]","name":"rolls","type":"tuple[]"},{"internalType":"uint8","name":"point","type":"uint8"},{"internalType":"string","name":"outcome","type":"string"},{"internalType":"uint256","name":"balance","type":"uint256"}],"internalType":"struct DiceRoller.PlayerData","name":"","type":"tuple"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"","type":"address"}],"name":"playerData","outputs":[{"internalType":"uint8","name":"point","type":"uint8"},{"internalType":"string","name":"outcome","type":"string"},{"internalType":"uint256","name":"balance","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"rollDice","outputs":[],"stateMutability":"payable","type":"function"},{"inputs":[{"internalType":"uint256","name":"amount","type":"uint256"}],"name":"withdrawFunds","outputs":[],"stateMutability":"nonpayable","type":"function"}]
 
@@ -10,7 +11,7 @@ export function ReadContract(config: any) {
     //console.log('ReadContract ... ')
     //console.log(config.config.chains)
     const { address } = useAccount()
-    const [outcome, setOutcome] = useState<object | string | null>(null);
+    const [outcome, setOutcome] = useState<string | null>(null);
     const [lastRollDice1, setLastRollDice1] = useState<number | null>(null);
     const [lastRollDice2, setLastRollDice2] = useState<number | null>(null);
     const [allRolls, setAllRolls] = useState<object | string | null>(null);
@@ -101,13 +102,28 @@ export function ReadContract(config: any) {
 
     return (
         <div>
-            <Overlay countdown={countdown} /> {/* Overlay component */}
-            <button 
+            <Overlay countdown={countdown} /> {/* Overlay component */}            
+            <hr></hr>
+            <br></br>
+            <div className="button-container">
+            <button className="roll-dice-button"
                 onClick={handleRollDice}
                 disabled={countdown !== null} // Disable button while countdown is active
             >
-                {countdown !== null ? `Rolling in ${countdown}...` : 'Roll Dice'}
+                {countdown !== null ? `Rolling ${countdown}...` : 'Roll Dice'}
             </button>
+            </div>
+            <br></br>
+            <hr></hr>
+            <div className="roll-outcome">
+            {outcome && <p>{outcome}</p>}
+            {lastRollDice1 !== null && lastRollDice2 !== null && (
+                <p>
+                {lastRollDice1.toString()},{lastRollDice2.toString()}
+                </p>
+            )}                
+            </div>
+            
             <button onClick={() => refetch()}>Get Rolls</button>
             <p>2x Estimated Gas: {((estimatedGas ?? BigInt(100000)) * BigInt(2)).toString()}</p>     
             <div>All Rolls: {JSON.stringify(allRolls, (key, value) =>
