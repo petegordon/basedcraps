@@ -11,8 +11,11 @@ type DeviceMotionEventWithPermissionConstructor = {
   requestPermission?: () => Promise<PermissionState>;
 };
 
+import { DiceRollClaudeProps } from './types';
+
 //const DiceRollClaude: React.FC = () => {
-export function DiceRollClaude(config: any) {
+export function DiceRollClaude({ dice1 = null, dice2 = null }: DiceRollClaudeProps) {
+  console.log(`DiceRollClaude: ${dice1} ,${dice2}`)
   const [isShaking, setIsShaking] = useState<boolean>(false);
   const [overlayVisible, setOverlayVisible] = useState<boolean>(true);
   const [logMessages, setLogMessages] = useState<string[]>([]);
@@ -24,6 +27,9 @@ export function DiceRollClaude(config: any) {
   const shakeStarted = useRef<boolean>(false);
   const shakeDirectionChanged = useRef<boolean>(false);
   const lastShakeTime = useRef<number>(0);
+
+
+  const [rollingInterval, setRollingInterval] = useState<NodeJS.Timeout | null>(null);
 
   const getRandomInt = (min: number, max: number): number => {
     return Math.floor(Math.random() * (max - min + 1)) + min;
@@ -50,24 +56,31 @@ export function DiceRollClaude(config: any) {
   }, []);
 
   const rollDice = useCallback((cube: HTMLElement, targetFace: number, duration: number) => {
-    const interval = setInterval(() => randomRotate(cube), 100);
+    const interval = setInterval(() => randomRotate(cube), 600);
     setTimeout(() => {
       clearInterval(interval);
       setDiceFace(cube, targetFace);
     }, duration);
   }, [randomRotate, setDiceFace]);
 
-  const rollBothDice = useCallback(() => {
-    const face1 = Math.floor(Math.random() * 6) + 1;
-    const face2 = Math.floor(Math.random() * 6) + 1;
+  const rollBothDice = (() => {
+    console.log(`rollBothDice: ${dice1} ,${dice2}`)
+    let face1 = dice1;
+    if (face1 === null) {      
+      face1 = Math.floor(Math.random() * 6) + 1;
+    }
+    let face2 = dice2;
+    if (face2 === null) {
+      face2 = Math.floor(Math.random() * 6) + 1;
+    }
     setLogMessages(prev => [...prev, `Rolling to faces: ${face1} and ${face2}`]);
     const cube1 = document.getElementById('cube1');
     const cube2 = document.getElementById('cube2');
     if (cube1 && cube2) {
-      rollDice(cube1, face1, 500);
-      rollDice(cube2, face2, 500);
+      rollDice(cube1, face1, 2400);
+      rollDice(cube2, face2, 2400);
     }
-  }, [rollDice]);
+  });
 
   const deviceMotionHandler = useCallback((event: DeviceMotionEvent) => {
     const shakeThreshold = 1200;
@@ -159,13 +172,36 @@ export function DiceRollClaude(config: any) {
     };
   }, [deviceMotionHandler]);
 
+
+  const startRolling = () => {
+    if (!rollingInterval) {
+      const interval = setInterval(rollBothDice, 750); // Call rollBothDice every 200ms
+      setRollingInterval(interval);
+    }
+  };
+  
+  const stopRolling = () => {
+    if (rollingInterval) {
+      clearInterval(rollingInterval);
+      setRollingInterval(null);
+    }
+  };
+
+  useEffect(() => { 
+    console.log(`useEffect DiceRollClaude: ${dice1} ,${dice2}`)
+    if (dice1 !== null && dice2 !== null) {
+      rollBothDice();
+    }
+  }, [dice1, dice2]);
+
+
   return (
     <div className="dice-roll-container">
       {overlayVisible && (
         <div className="overlay" onClick={handleOverlayClick}>
           <div className="overlay-text">Touch</div>
         </div>
-      )}
+      )}      
       <div className="section container">
         <div id="dice1" className="dice">
           <div id="cube1" className="cube">
@@ -190,6 +226,7 @@ export function DiceRollClaude(config: any) {
           </div>
         </div>
       </div>
+      <button className="button" onMouseDown={startRolling} onMouseUp={stopRolling}>Roll Dice</button>
       <div className="log-container">
         Log:
         {logMessages.map((message, index) => (
@@ -198,4 +235,4 @@ export function DiceRollClaude(config: any) {
       </div>
     </div>
   );
-};
+};  

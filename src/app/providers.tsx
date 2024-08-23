@@ -21,9 +21,9 @@ export function Providers(props: {
     <WagmiProvider config={config} initialState={props.initialState}>
       <QueryClientProvider client={queryClient}>
         {props.children}
-        <ReadContract config={config} />
-        <GasEstimate config={config} />
-        <DiceRollClaude />
+        <ReadContract config={config}>
+        </ReadContract>
+        <GasEstimate config={config} />        
       </QueryClientProvider>
     </WagmiProvider>
   )

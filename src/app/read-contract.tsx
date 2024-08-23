@@ -1,12 +1,15 @@
+import React from 'react';
 import { useState, useEffect } from 'react';
 import { useAccount, useEstimateGas, useReadContract, useWriteContract, useWatchContractEvent} from 'wagmi'
 import { parseEther } from 'viem'
 import Overlay from './Overlay'; // Import the Overlay component
 import './read-contract.css'; // You'll create this CSS file to style the overlay
+import { DiceRollClaudeProps } from './types';
+import { DiceRollClaude } from './dice-roll-claude';
 
 const contractABI = [{"inputs":[{"internalType":"address","name":"_admin","type":"address"}],"stateMutability":"nonpayable","type":"constructor"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"admin","type":"address"},{"indexed":false,"internalType":"uint256","name":"amount","type":"uint256"}],"name":"AdminWithdrawal","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"player","type":"address"},{"indexed":false,"internalType":"uint256","name":"amount","type":"uint256"}],"name":"Deposit","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"player","type":"address"},{"indexed":false,"internalType":"uint8","name":"value1","type":"uint8"},{"indexed":false,"internalType":"uint8","name":"value2","type":"uint8"},{"indexed":false,"internalType":"string","name":"outcome","type":"string"}],"name":"DiceRolled","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"sender","type":"address"},{"indexed":false,"internalType":"uint256","name":"amount","type":"uint256"}],"name":"FundsAdded","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"player","type":"address"},{"indexed":false,"internalType":"uint256","name":"amount","type":"uint256"}],"name":"Withdrawal","type":"event"},{"inputs":[],"name":"admin","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"depositFunds","outputs":[],"stateMutability":"payable","type":"function"},{"inputs":[{"internalType":"address","name":"playerAddress","type":"address"}],"name":"getRollsForAddress","outputs":[{"components":[{"components":[{"internalType":"uint8","name":"value1","type":"uint8"},{"internalType":"uint8","name":"value2","type":"uint8"}],"internalType":"struct DiceRoller.Roll[]","name":"rolls","type":"tuple[]"},{"internalType":"uint8","name":"point","type":"uint8"},{"internalType":"string","name":"outcome","type":"string"},{"internalType":"uint256","name":"balance","type":"uint256"}],"internalType":"struct DiceRoller.PlayerData","name":"","type":"tuple"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"","type":"address"}],"name":"playerData","outputs":[{"internalType":"uint8","name":"point","type":"uint8"},{"internalType":"string","name":"outcome","type":"string"},{"internalType":"uint256","name":"balance","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"rollDice","outputs":[],"stateMutability":"payable","type":"function"},{"inputs":[{"internalType":"uint256","name":"amount","type":"uint256"}],"name":"withdrawFunds","outputs":[],"stateMutability":"nonpayable","type":"function"}]
 
-export function ReadContract(config: any) {
+export function ReadContract({ config }: { config: any}) {
     //console.log('config: ', config)
     //console.log('ReadContract ... ')
     //console.log(config.config.chains)
@@ -93,13 +96,14 @@ export function ReadContract(config: any) {
                 value: parseEther('0.0003'),
                 gas: (estimatedGas ?? BigInt(100000)) * BigInt(2),                       
             });
+            console.log('set countdown')
             setCountdown(3); // Start countdown    
         } catch (error) {
             console.error('Transaction failed:', error);
             // Handle any errors here
         }
     };
-
+    
     return (
         <div>
             <Overlay countdown={countdown} /> {/* Overlay component */}            
@@ -111,10 +115,9 @@ export function ReadContract(config: any) {
                 disabled={countdown !== null} // Disable button while countdown is active
             >
                 {countdown !== null ? `Rolling ${countdown}...` : 'Roll Dice'}
-            </button>
+            </button>            
             </div>
-            <br></br>
-            <hr></hr>
+            <DiceRollClaude dice1={lastRollDice1} dice2={lastRollDice2} />            
             <div className="roll-outcome">
             {outcome && <p>{outcome}</p>}
             {lastRollDice1 !== null && lastRollDice2 !== null && (
@@ -133,7 +136,7 @@ export function ReadContract(config: any) {
                     typeof value === 'bigint' ? value.toString() : value
                 )}</div>
             <div>Dice1: {lastRollDice1}</div>
-            <div>Dice2: {lastRollDice2}</div>
+            <div>Dice2: {lastRollDice2}</div>        
             
             
         </div>
