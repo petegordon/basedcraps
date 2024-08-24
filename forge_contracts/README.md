@@ -1,3 +1,11 @@
+## Foundry Deploy
+
+# Env Variables
+export $(grep -v '^#' .env | xargs)
+
+
+forge create ./src/Dice.sol:DiceRoller --rpc-url $BASE_SEPOLIA_RPC --account deployer --constructor-args 0xA853f60A0b1e1822E2F17408C4342EFcaD57bEEe
+
 ## Foundry
 
 **Foundry is a blazing fast, portable and modular toolkit for Ethereum application development written in Rust.**

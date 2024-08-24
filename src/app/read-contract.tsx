@@ -27,7 +27,7 @@ export function ReadContract({ config }: { config: any}) {
     const { writeContractAsync } = useWriteContract()
     const { data, refetch } = useReadContract({
         abi: contractABI,
-        address: '0x61E96a002c40e29c68bD679dA7f48Aaea3F317a0',
+        address: '0x34654f752D2A64d47Ea97F6eBD9D1699B625cE84',
         functionName: 'getRollsForAddress',
         args: [address],
       }); 
@@ -63,7 +63,7 @@ export function ReadContract({ config }: { config: any}) {
     // Listen for the DiceRolled event
     useWatchContractEvent({
         abi: contractABI,
-        address: '0x61E96a002c40e29c68bD679dA7f48Aaea3F317a0',
+        address: '0x34654f752D2A64d47Ea97F6eBD9D1699B625cE84',
         eventName: 'DiceRolled',
         onError(error) {
             console.error('Error listening for events', error);
@@ -81,7 +81,7 @@ export function ReadContract({ config }: { config: any}) {
 
     const { data: estimatedGas, refetch: estimateGas } = useEstimateGas({
         data: '0x837e7cc6',       
-        to: '0x61E96a002c40e29c68bD679dA7f48Aaea3F317a0',
+        to: '0x34654f752D2A64d47Ea97F6eBD9D1699B625cE84',
         value: parseEther('0.0003'), // If your function requires sending ETH
       });
 
@@ -91,7 +91,7 @@ export function ReadContract({ config }: { config: any}) {
             // Trigger the contract call immediately
             await writeContractAsync({
                 abi: contractABI,
-                address: '0x61E96a002c40e29c68bD679dA7f48Aaea3F317a0',
+                address: '0x34654f752D2A64d47Ea97F6eBD9D1699B625cE84',
                 functionName: 'rollDice',
                 value: parseEther('0.0003'),
                 gas: (estimatedGas ?? BigInt(100000)) * BigInt(2),                       

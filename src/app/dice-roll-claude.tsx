@@ -227,12 +227,6 @@ export function DiceRollClaude({ dice1 = null, dice2 = null }: DiceRollClaudePro
         </div>
       </div>
       <button className="button" onMouseDown={startRolling} onMouseUp={stopRolling}>Roll Dice</button>
-      <div className="log-container">
-        Log:
-        {logMessages.map((message, index) => (
-          <div key={index}>{message}</div>
-        ))}
-      </div>
     </div>
   );
 };  

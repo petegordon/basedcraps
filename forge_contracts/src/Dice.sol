@@ -12,6 +12,8 @@ contract DiceRoller {
         uint8 point; // The point number if established
         string outcome; // Outcome of the most recent roll
         uint256 balance; // Player's balance in the contract        
+        uint256 winnings; // Player's winnings in the contract
+        uint256 losses; // Player's losses in the contract
     }
 
     uint256 nonce; // Nonce to ensure randomness in dice roll
@@ -31,6 +33,25 @@ contract DiceRoller {
         admin = _admin;
     }
 
+    function processLoss() private returns(int8){
+        playerData[msg.sender].losses += playerData[msg.sender].balance; // Update the total losses
+        playerData[msg.sender].point = 0; // Reset the point
+        playerData[msg.sender].balance = 0; //Reset the balance
+        
+        return -1;
+    }
+    function processWin() private returns(int8){
+        // Payout logic for win
+        uint256 payout = playerData[msg.sender].balance * 2;        
+        require(address(this).balance >= payout, "Contract does not have enough funds");
+        playerData[msg.sender].winnings += payout; // Update the total winnings
+        playerData[msg.sender].point = 0; // Reset the point                
+        playerData[msg.sender].balance = 0; //Reset the balance        
+        payable(msg.sender).transfer(payout);
+        emit Withdrawal(msg.sender, payout); 
+        return 1;
+    }
+
     // Function to roll two dice and apply Pass Line Bet rules
     function rollDice() public payable {
         require(msg.value == ROLL_COST, "You must send exactly 0.0003 ETH to roll the dice");
@@ -44,43 +65,31 @@ contract DiceRoller {
         uint8 sum = value1 + value2; // Sum of the two dice values
 
         string memory outcome;
+        int8 roll_outcome = 0;
         if (playerData[msg.sender].point == 0) { // Come-out roll
             // Clear the previous rolls for the player on a come-out roll
             delete playerData[msg.sender].rolls;
-
             if (sum == 7 || sum == 11) {
-                outcome = "WIN";
-                playerData[msg.sender].point = 0; // Reset the point
-                // Payout logic for win
-                uint256 payout = playerData[msg.sender].balance * 2;
-                require(address(this).balance >= payout, "Contract does not have enough funds");
-                playerData[msg.sender].balance = 0;
-                payable(msg.sender).transfer(payout);
-                emit Withdrawal(msg.sender, payout);                
+                roll_outcome = processWin();
             } else if (sum == 2 || sum == 3 || sum == 12) {
-                outcome = "LOSE";
-                playerData[msg.sender].point = 0; // Reset the point
-                playerData[msg.sender].balance = 0;
+                roll_outcome = processLoss();
             } else {
                 playerData[msg.sender].point = sum; // Establish the point
-                outcome = "ROLL";
             }
         } else { // Point is established
             if (sum == playerData[msg.sender].point) {
-                outcome = "WIN";
-                playerData[msg.sender].point = 0; // Reset the point
-                // Payout logic for win
-                uint256 payout = playerData[msg.sender].balance * 2;
-                require(address(this).balance >= payout, "Contract does not have enough funds");
-                playerData[msg.sender].balance = 0;
-                payable(msg.sender).transfer(payout);
-                emit Withdrawal(msg.sender, payout);                
+                roll_outcome = processWin();               
             } else if (sum == 7) {
-                outcome = "LOSE";
-                playerData[msg.sender].point = 0; // Reset the point
-            } else {
-                outcome = "ROLL";
+                roll_outcome = processLoss();
             }
+        }
+
+        if(roll_outcome == 1){
+            outcome = "WIN";
+        } else if(roll_outcome == -1){
+            outcome = "LOSE";
+        } else if(roll_outcome == 0){
+            outcome = "ROLL";
         }
 
         // Set the outcome on the PlayerData struct
