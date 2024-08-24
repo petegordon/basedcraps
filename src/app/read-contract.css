@@ -5,7 +5,7 @@
 }
 
 .roll-dice-button {
-    width: 10rem;
+    width: 16.18rem;
     height: 10rem; /* Circular button */
     background: linear-gradient(to bottom, #6fcf97, #4CAF50); /* Gradient for depth */
     border-radius: 50%; /* Circular shape */
@@ -36,4 +36,7 @@
 
 .roll-outcome {
     font-size: 3rem;
+}
+.emoji-button {
+    font-size: 4rem;
 }
