@@ -6,15 +6,10 @@ interface DeviceMotionEventWithPermission extends DeviceMotionEvent {
   requestPermission?: () => Promise<PermissionState>;
 }
 
-type DeviceMotionEventWithPermissionConstructor = {
-  new(): DeviceMotionEventWithPermission;
-  requestPermission?: () => Promise<PermissionState>;
-};
-
 import { DiceRollClaudeProps } from './types';
 
 //const DiceRollClaude: React.FC = () => {
-export function DiceRollClaude({ dice1 = null, dice2 = null }: DiceRollClaudeProps) {
+export function DiceRollClaude({ rollingDice = false, dice1 = null, dice2 = null }: DiceRollClaudeProps) {
   console.log(`DiceRollClaude: ${dice1} ,${dice2}`)
   const [isShaking, setIsShaking] = useState<boolean>(false);
   const [overlayVisible, setOverlayVisible] = useState<boolean>(true);
@@ -56,7 +51,7 @@ export function DiceRollClaude({ dice1 = null, dice2 = null }: DiceRollClaudePro
   }, []);
 
   const rollDice = useCallback((cube: HTMLElement, targetFace: number, duration: number) => {
-    const interval = setInterval(() => randomRotate(cube), 600);
+    const interval = setInterval(() => randomRotate(cube), 300);
     setTimeout(() => {
       clearInterval(interval);
       setDiceFace(cube, targetFace);
@@ -77,8 +72,8 @@ export function DiceRollClaude({ dice1 = null, dice2 = null }: DiceRollClaudePro
     const cube1 = document.getElementById('cube1');
     const cube2 = document.getElementById('cube2');
     if (cube1 && cube2) {
-      rollDice(cube1, face1, 2400);
-      rollDice(cube2, face2, 2400);
+      rollDice(cube1, face1, 600);
+      rollDice(cube2, face2, 600);
     }
   });
 
@@ -142,28 +137,48 @@ export function DiceRollClaude({ dice1 = null, dice2 = null }: DiceRollClaudePro
   }, [rollBothDice]);
 
   const initializeMotionEvent = useCallback(() => {
-    const DeviceMotionEventWithPermission = 
-      window.DeviceMotionEvent as unknown as DeviceMotionEventWithPermissionConstructor;
-        
+    const handleMotion = () => {
+      window.removeEventListener('devicemotion', handleMotion);
+      setOverlayVisible(false);
+    };
 
-      if (typeof DeviceMotionEventWithPermission.requestPermission === 'function') {
-        DeviceMotionEventWithPermission.requestPermission()
+    // Use type assertion for the global DeviceMotionEvent
+    const DeviceMotionEventWithPermission = DeviceMotionEvent as unknown as {
+      prototype: DeviceMotionEvent;
+      requestPermission?: () => Promise<PermissionState>;
+    };
+
+    if (typeof DeviceMotionEventWithPermission.requestPermission === 'function') {
+      // iOS 13+ devices
+      DeviceMotionEventWithPermission.requestPermission()
         .then((permissionState: PermissionState) => {
           if (permissionState === 'granted') {
             window.addEventListener('devicemotion', deviceMotionHandler);
+            setOverlayVisible(false);
           } else {
             alert('Device Motion permission denied.');
+            setOverlayVisible(false); // Still remove overlay even if permission denied
           }
         })
-        .catch(console.error);
+        .catch((error) => {
+          console.error('Error requesting device motion permission:', error);
+          setOverlayVisible(false); // Remove overlay if there's an error
+        });
     } else {
+      // Non-iOS 13+ devices or devices without devicemotion
+      window.addEventListener('devicemotion', handleMotion);
       window.addEventListener('devicemotion', deviceMotionHandler);
+      
+      // Set a timeout to remove the overlay even if no devicemotion event is fired
+      setTimeout(() => {
+        setOverlayVisible(false);
+      }, 1000); // Wait for 1 second before removing the overlay
     }
   }, [deviceMotionHandler]);
 
-  const handleOverlayClick = useCallback(async () => {
-    setOverlayVisible(false);
-    await initializeMotionEvent();
+  const handleOverlayClick = useCallback(() => {
+    initializeMotionEvent();
+    setOverlayVisible(false); // Immediately hide the overlay on click
   }, [initializeMotionEvent]);
 
   useEffect(() => {
@@ -186,6 +201,14 @@ export function DiceRollClaude({ dice1 = null, dice2 = null }: DiceRollClaudePro
       setRollingInterval(null);
     }
   };
+
+  useEffect(() => {
+    if (rollingDice) {
+      startRolling();
+    } else {
+      stopRolling();
+    }
+  }, [rollingDice]);
 
   useEffect(() => { 
     console.log(`useEffect DiceRollClaude: ${dice1} ,${dice2}`)

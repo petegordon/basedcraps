@@ -16,6 +16,7 @@ export function ReadContract({ config }: { config: any}) {
     //console.log(config.config.chains)
     const { address } = useAccount()
     const [outcome, setOutcome] = useState<string | null>(null);
+    const [rollingDice, setRollingDice] = useState<boolean>(false);
     const [lastRollDice1, setLastRollDice1] = useState<number | null>(null);
     const [lastRollDice2, setLastRollDice2] = useState<number | null>(null);
     const [allRolls, setAllRolls] = useState<object | string | null>(null);
@@ -102,7 +103,8 @@ export function ReadContract({ config }: { config: any}) {
             console.log('DiceRolled logs:', diceRolledLogs);
             setOutcome(diceRolledLogs[0].args.outcome);
             setLastRollDice1(diceRolledLogs[0].args.value1);
-            setLastRollDice2(diceRolledLogs[0].args.value2);            
+            setLastRollDice2(diceRolledLogs[0].args.value2);  
+            setRollingDice(false);          
         },
     });       
 
@@ -116,7 +118,9 @@ export function ReadContract({ config }: { config: any}) {
 
     const handleRollDice = async () => {
         try {
-
+            setLastRollDice1(null);
+            setLastRollDice2(null);
+            setRollingDice(true);
             // Trigger the contract call immediately
             await writeContractAsync({
                 abi: contractABI,
@@ -164,7 +168,7 @@ export function ReadContract({ config }: { config: any}) {
             </div>
 
             */}
-            <DiceRollClaude dice1={lastRollDice1} dice2={lastRollDice2} />            
+            <DiceRollClaude rollingDice={rollingDice} dice1={lastRollDice1} dice2={lastRollDice2} />            
             <div className="roll-outcome">
             {outcome && <p>{outcome}</p>}
             {lastRollDice1 !== null && lastRollDice2 !== null && (
